@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>shattoshatto</title>
+
+<!-- iPhone 홈 화면 앱처럼 보이게 하는 설정 -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="shattoshatto" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#F3F1EC" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1B1B19" />
+
+<style>
+:root {
+  --paper: #F3F1EC; --paper-deep: #E8E6DE; --ink: #2B2B27; --ink-soft: #6B6B63;
+  --red: #4D6B4D; --blue: #4D6B4D; --gold: #C9972B; --card: #FBFAF8; --line: #DDDAD1;
+  --sage-soft: #6E996E; --dot-past: #2B2B27; --streak-bg: #FDF3E3; --streak-text: #8A6512;
+  --on-accent: #FFFFFF;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1B1B19; --paper-deep: #232320; --ink: #EDEBE6; --ink-soft: #A6A39B;
+    --red: #8FC28F; --blue: #8FC28F; --gold: #E3B75A; --card: #211F1D; --line: #38362F;
+    --sage-soft: #6E996E; --dot-past: #3A3835; --streak-bg: #2E2617; --streak-text: #E3B75A;
+    --on-accent: #1B1B19;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background: var(--paper); font-family: -apple-system, system-ui, sans-serif; color: var(--ink); }
+.af-root { display:flex; justify-content:center; }
+.af-app { width:100%; max-width:480px; min-height:100dvh; background:var(--paper); display:flex; flex-direction:column; position:relative; }
+.af-header { flex-shrink:0; background:var(--paper); border-bottom:1px solid var(--line); padding: calc(env(safe-area-inset-top,0px) + 14px) 16px 12px; }
+.af-brand-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.af-brand { display:flex; align-items:center; gap:8px; }
+.af-brand-mark { color:var(--red); font-size:18px; transform:rotate(-15deg); display:inline-block; }
+.af-brand-name { font-weight:700; font-size:19px; letter-spacing:-0.02em; }
+.af-header-right { display:flex; align-items:center; gap:12px; }
+.af-stat { display:flex; flex-direction:column; align-items:flex-end; line-height:1.1; }
+.af-stat-num { font-weight:700; font-size:18px; color:var(--red); }
+.af-stat-num-today { color: var(--gold); }
+.af-stat-label { font-size:9.5px; color:var(--ink-soft); white-space:nowrap; }
+.af-settings-btn { width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; }
+.af-searchbar { display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:9px 11px; }
+.af-searchbar-icon { color:var(--ink-soft); flex-shrink:0; }
+.af-searchbar-input { border:none; outline:none; background:transparent; font-size:14.5px; flex:1; font-family:inherit; color:var(--ink); }
+.af-searchbar-clear { border:none; background:none; color:var(--ink-soft); cursor:pointer; display:flex; font-size:14px; }
+.af-screen { flex:1; min-height:0; display:flex; flex-direction:column; position:relative; }
+.af-ico { display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+.af-spinner { display:inline-block; width:13px; height:13px; border-radius:50%; border:2px solid var(--line); border-top-color:var(--blue); animation:af-spin 0.8s linear infinite; vertical-align:middle; }
+@keyframes af-spin { to { transform:rotate(360deg); } }
+.af-scroll { flex:1; min-height:0; overflow-y:auto; padding:14px 16px 24px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.af-scroll::-webkit-scrollbar { width:5px; background:transparent; }
+.af-empty { text-align:center; padding:60px 20px; color:var(--ink-soft); }
+.af-empty-stamp { font-size:28px; margin-bottom:10px; color:var(--gold); }
+.af-empty p { font-size:14px; line-height:1.6; }
+.af-contexts-title { font-size:13px; color:var(--ink-soft); font-weight:600; margin-bottom:12px; }
+.af-context-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+.af-context-tile { display:flex; flex-direction:column; align-items:flex-start; gap:4px; border:1px solid var(--line); background:var(--card); cursor:pointer; padding:12px 10px; border-radius:10px; width:100%; min-height:64px; }
+.af-context-tile-new { align-items:center; justify-content:center; border-style:dashed; color:var(--ink-soft); }
+.af-context-label {
+  font-size:13px; font-weight:600; color: var(--ink); line-height:1.3; text-align:left;
+}
+.af-context-tile-new .af-context-label { color: var(--ink-soft); font-weight:500; }
+.af-context-count { font-size:11px; color:var(--ink-soft); }
+.af-back-row { display:flex; align-items:center; gap:4px; background:none; border:none; cursor:pointer; font-weight:700; font-size:16px; color:var(--ink); padding:2px 0 12px; }
+.af-group-body { display:flex; flex-direction:column; gap:10px; }
+.af-card { display:flex; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.af-card-bar { width:3px; flex-shrink:0; background:var(--sage-soft); }
+.af-card-body { flex:1; padding:11px 13px; position:relative; }
+.af-en { font-size:16px; font-weight:600; margin:0 0 4px; line-height:1.4; }
+.af-ko { font-size:13.5px; color:var(--ink-soft); margin:0; line-height:1.4; }
+.af-icon-btn { width:28px; height:28px; border-radius:7px; border:1px solid var(--line); background:var(--paper); color:var(--red); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; }
+.af-icon-btn-muted { color:var(--ink-soft); }
+.af-card.is-editing { border-color:var(--sage-soft); }
+.af-longpressable { -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+.af-menu-backdrop { position:fixed; inset:0; z-index:20; background:transparent; }
+.af-card-menu { position:absolute; top:8px; right:8px; z-index:21; background:var(--card); border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 18px rgba(34,48,58,0.16); overflow:hidden; display:flex; flex-direction:column; min-width:100px; }
+.af-card-menu-item { display:flex; align-items:center; gap:6px; border:none; background:none; padding:10px 12px; font-size:13px; color:var(--ink); cursor:pointer; text-align:left; width:100%; }
+.af-card-menu-item + .af-card-menu-item { border-top:1px solid var(--line); }
+.af-card-menu-item-danger { color:var(--red); }
+.af-card-actions { display:flex; gap:6px; margin-top:8px; }
+.af-edit-en, .af-edit-ko { width:100%; border:1px solid var(--line); border-radius:7px; padding:6px 8px; font-family:inherit; font-size:14px; resize:none; margin-bottom:6px; background:var(--paper); }
+.af-edit-en { font-weight:600; }
+.af-result-count { font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
+.af-search-tag { font-size:10.5px; color:var(--blue); margin-bottom:4px; }
+.af-add { flex:1; overflow-y:auto; padding:16px 18px 24px; display:flex; flex-direction:column; gap:4px; }
+.af-field-label { font-size:12px; font-weight:700; color:var(--ink-soft); margin:10px 0 6px; display:flex; align-items:center; gap:6px; }
+.af-inline-loading { display:flex; align-items:center; gap:4px; color:var(--blue); font-weight:600; font-size:11.5px; }
+.af-inline-link { background:none; border:none; padding:0; color:var(--blue); text-decoration:underline; cursor:pointer; font-size:inherit; font-family:inherit; }
+.af-add-en, .af-add-ko { width:100%; border:1px solid var(--line); border-radius:10px; padding:9px 11px; font-size:14.5px; font-family:inherit; resize:none; background:var(--card); color:var(--ink); }
+.af-add-en { font-weight:600; font-size:15.5px; }
+.af-error-text { color:var(--red); font-size:12px; margin:4px 0 0; }
+.af-situation-row { display:flex; gap:6px; }
+.af-situation-select, .af-situation-input { flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-size:14px; font-family:inherit; background:var(--card); color:var(--ink); }
+.af-situation-new { border:1px dashed var(--blue); color:var(--blue); background:none; border-radius:10px; padding:8px 10px; font-size:12.5px; cursor:pointer; white-space:nowrap; }
+.af-save-btn { margin-top:18px; background:var(--red); color:var(--on-accent); border:none; border-radius:12px; padding:13px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; width:100%; }
+.af-save-btn:disabled { background:var(--line); color:var(--ink-soft); }
+.af-cal-hero { padding: 4px 2px 18px; }
+.af-cal-hero-num { font-size:76px; font-weight:800; line-height:0.9; letter-spacing:-0.03em; color:var(--ink); }
+.af-cal-hero-row { display:flex; align-items:baseline; justify-content:space-between; margin-top:6px; }
+.af-cal-hero-month { font-size:15px; font-weight:600; color:var(--ink-soft); }
+.af-cal-hero-dow { font-size:15px; font-weight:600; color:var(--ink-soft); }
+.af-cal-nav-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0 12px; border-top:1px solid var(--line); }
+.af-cal-title { font-weight:700; font-size:14.5px; color:var(--ink-soft); }
+.af-cal-nav { border:none; background:none; width:26px; height:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:17px; color:var(--ink-soft); }
+.af-streak { display:flex; align-items:center; gap:6px; background:var(--streak-bg); border:1px solid var(--gold); color:var(--streak-text); border-radius:10px; padding:8px 11px; font-size:13px; margin-top:14px; }
+.af-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.af-cal-dow { margin-bottom:6px; }
+.af-cal-dow-cell { text-align:center; font-size:11.5px; color:var(--ink-soft); font-weight:600; padding-bottom:2px; }
+.af-cal-dow-cell.is-today-dow { color:var(--gold); font-weight:800; }
+.af-cal-dot-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; padding:0; }
+.af-cal-dot { width:94%; height:94%; border-radius:50%; border:none; background:var(--line); display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; }
+.af-cal-dot.is-future { background: var(--line); color: var(--ink-soft); }
+.af-cal-dot.is-past { background: var(--dot-past); color: #fff; }
+.af-cal-dot.is-today { background: #E8734A; color: #fff; }
+.af-cal-legend { display:flex; align-items:center; gap:14px; font-size:12px; color:var(--ink-soft); margin-top:16px; }
+.af-cal-legend-item { display:flex; align-items:center; gap:6px; }
+.af-tabbar { flex-shrink:0; display:grid; grid-template-columns:1fr 56px 1fr; align-items:center; border-top:1px solid var(--line); background:var(--paper); padding:8px 10px calc(env(safe-area-inset-bottom,0px) + 8px); }
+.af-tabbtn { display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; color:var(--ink-soft); font-size:10.5px; cursor:pointer; padding:4px 0; }
+.af-tabbtn.is-active { color:var(--red); }
+.af-tab-add { width:50px; height:50px; border-radius:50%; background:var(--red); color:var(--on-accent); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; margin:0 auto; box-shadow:0 4px 10px rgba(77,107,77,0.4); font-size:22px; }
+.af-modal-backdrop { position:fixed; inset:0; background:rgba(34,48,58,0.45); display:flex; align-items:flex-end; justify-content:center; z-index:50; }
+.af-modal { width:100%; max-width:480px; background:var(--paper); border-radius:18px 18px 0 0; padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 20px); }
+.af-modal-title { font-weight:700; font-size:17px; margin:0 0 8px; }
+.af-modal-desc { font-size:12.5px; color:var(--ink-soft); line-height:1.6; margin:0 0 12px; }
+.af-modal-input { width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:14px; margin-bottom:14px; background:var(--card); }
+.af-modal-actions { display:flex; gap:8px; }
+.af-modal-actions .af-save-btn { margin-top:0; }
+.af-modal-cancel { border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:12px; padding:13px 18px; font-size:14px; cursor:pointer; flex:1; }
+.af-move-list { display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; margin-bottom:14px; }
+.af-move-option { text-align:left; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:11px 13px; font-size:14px; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:space-between; }
+.af-move-option.is-current { border-color:var(--red); }
+.af-move-current-tag { font-size:10.5px; color:var(--red); font-weight:700; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DAILY_GOAL = 20;
+  var STORAGE_KEY = "af_sentences";
+  var API_KEY_STORAGE = "af_api_key";
+  var TRANSLATE_MODEL = "claude-haiku-4-5-20251001";
+
+  // All "today"/date logic uses Korea Standard Time (UTC+9), regardless of the
+  // device's own timezone, so the daily goal/calendar always matches Korean days.
+  function kstNow() {
+    var now = new Date();
+    return new Date(now.getTime() + 9 * 3600000);
+  }
+  function kstIso(d) {
+    return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0");
+  }
+  function todayStr(offset) {
+    offset = offset || 0;
+    var d = kstNow();
+    d.setUTCDate(d.getUTCDate() + offset);
+    return kstIso(d);
+  }
+  function uid() { return Math.random().toString(36).slice(2, 10); }
+  function esc(str) {
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  var SEED = [
+    { id: "s1", en: "I wanna go for a green salad.", ko: "그린 샐러드 하나 할게요.", situation: "호텔 조식 카페에서", date: todayStr(-2) },
+    { id: "s2", en: "What do we have today?", ko: "오늘 어떤 것 주문할거예요?", situation: "호텔 조식 카페에서", date: todayStr(-2) },
+    { id: "s3", en: "I have a reservation under Kim.", ko: "김 이름으로 예약했어요.", situation: "호텔 체크인때", date: todayStr(-1) },
+    { id: "s4", en: "Can I get a double-double, animal style.", ko: "더블더블 하나요, 애니멀 스타일로요.", situation: "인앤아웃에서", date: todayStr(0) }
+  ];
+
+  function loadSentences() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED)); } catch (e) {}
+    return SEED.slice();
+  }
+  function saveSentences(list) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function translateToKorean(english, cb) {
+    var apiKey = null;
+    try { apiKey = localStorage.getItem(API_KEY_STORAGE); } catch (e) {}
+    if (!apiKey) { cb({ code: "NO_API_KEY" }, null); return; }
+    fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: TRANSLATE_MODEL,
+        max_tokens: 300,
+        system: "You translate a single English sentence into natural, conversational Korean, matching casual spoken register when the English is casual. Reply with ONLY the Korean translation text, nothing else — no quotes, no explanation, no romanization.",
+        messages: [{ role: "user", content: english }]
+      })
+    }).then(function (res) {
+      if (!res.ok) { return res.json().catch(function () { return {}; }).then(function (b) { throw new Error((b.error && b.error.message) || "translate failed"); }); }
+      return res.json();
+    }).then(function (data) {
+      var text = (data.content || []).filter(function (b) { return b.type === "text"; }).map(function (b) { return b.text; }).join("").trim();
+      cb(null, text);
+    }).catch(function (err) {
+      cb({ code: "ERR", message: err.message }, null);
+    });
+  }
+
+  // ---------------- state ----------------
+  var state = {
+    sentences: loadSentences(),
+    tab: "home",
+    selectedSituation: null,
+    query: "",
+    settingsOpen: false,
+    editingId: null,
+    editBuffer: { en: "", ko: "" },
+    menuOpenId: null,
+    moveForId: null,
+    moveCustomMode: false,
+    add: { en: "", ko: "", situation: "", useCustom: false, translating: false, translateErr: null },
+    calCursor: (function () { var d = kstNow(); return { y: d.getUTCFullYear(), m: d.getUTCMonth() }; })()
+  };
+  var addTranslateTimer = null;
+  var pressTimer = null;
+
+  function persist(next) { state.sentences = next; saveSentences(next); }
+  function addSentenceRecord(entry) {
+    persist([{ id: uid(), date: todayStr(0), en: entry.en, ko: entry.ko, situation: entry.situation }].concat(state.sentences));
+  }
+  function updateSentenceRecord(id, patch) {
+    persist(state.sentences.map(function (s) { return s.id === id ? Object.assign({}, s, patch) : s; }));
+  }
+  function deleteSentenceRecord(id) {
+    persist(state.sentences.filter(function (s) { return s.id !== id; }));
+  }
+
+  // ---------------- render ----------------
+  var root = document.getElementById("root");
+
+  function situationGroups(list) {
+    var map = {};
+    list.forEach(function (s) {
+      if (!map[s.situation]) map[s.situation] = { count: 0, lastDate: s.date };
+      map[s.situation].count++;
+      if (s.date > map[s.situation].lastDate) map[s.situation].lastDate = s.date;
+    });
+    return Object.keys(map).map(function (k) { return [k, map[k]]; })
+      .sort(function (a, b) { return a[1].lastDate < b[1].lastDate ? 1 : -1; });
+  }
+
+  function cardHTML(s) {
+    var isEditing = state.editingId === s.id;
+    var menuOpen = state.menuOpenId === s.id;
+    if (isEditing) {
+      return (
+        '<div class="af-card is-editing" data-card-id="' + s.id + '">' +
+          '<div class="af-card-bar"></div>' +
+          '<div class="af-card-body">' +
+            '<textarea class="af-edit-en" data-edit-field="en" data-id="' + s.id + '" rows="2">' + esc(state.editBuffer.en) + '</textarea>' +
+            '<textarea class="af-edit-ko" data-edit-field="ko" data-id="' + s.id + '" rows="2">' + esc(state.editBuffer.ko) + '</textarea>' +
+            '<div class="af-card-actions">' +
+              '<button class="af-icon-btn" data-action="save-edit" data-id="' + s.id + '">✓</button>' +
+              '<button class="af-icon-btn af-icon-btn-muted" data-action="cancel-edit" data-id="' + s.id + '">✕</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+    return (
+      '<div class="af-card" data-card-id="' + s.id + '">' +
+        '<div class="af-card-bar"></div>' +
+        '<div class="af-card-body af-press-target" data-id="' + s.id + '">' +
+          '<p class="af-en af-longpressable">' + esc(s.en) + '</p>' +
+          '<p class="af-ko af-longpressable">' + esc(s.ko) + '</p>' +
+          (menuOpen ?
+            '<div class="af-menu-backdrop" data-action="close-menu"></div>' +
+            '<div class="af-card-menu">' +
+              '<button class="af-card-menu-item" data-action="menu-edit" data-id="' + s.id + '">✎ 수정</button>' +
+              '<button class="af-card-menu-item" data-action="menu-move" data-id="' + s.id + '">⇄ 이동</button>' +
+              '<button class="af-card-menu-item af-card-menu-item-danger" data-action="menu-delete" data-id="' + s.id + '">🗑 삭제</button>' +
+            '</div>'
+            : '') +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function emptyHTML(text) {
+    return '<div class="af-empty"><div class="af-empty-stamp">✎</div><p>' + esc(text) + '</p></div>';
+  }
+
+  function homeScreenHTML() {
+    if (state.selectedSituation) {
+      var list = state.sentences.filter(function (s) { return s.situation === state.selectedSituation; });
+      return (
+        '<div class="af-scroll">' +
+          '<button class="af-back-row" data-action="back-home">‹ ' + esc(state.selectedSituation) + '</button>' +
+          '<div class="af-group-body">' + list.map(cardHTML).join("") + '</div>' +
+        '</div>'
+      );
+    }
+    var groups = situationGroups(state.sentences);
+    if (groups.length === 0) {
+      return (
+        '<div class="af-scroll">' +
+          '<div class="af-contexts-title">내 상황</div>' +
+          emptyHTML("아직 저장된 상황이 없어요. + 버튼으로 첫 문장을 추가해보세요.") +
+        '</div>'
+      );
+    }
+    var tiles = groups.map(function (g) {
+      return (
+        '<button class="af-context-tile" data-action="open-situation" data-situation="' + esc(g[0]) + '">' +
+          '<span class="af-context-label">' + esc(g[0]) + '</span>' +
+          '<span class="af-context-count">' + g[1].count + '문장</span>' +
+        '</button>'
+      );
+    }).join("");
+    tiles += (
+      '<button class="af-context-tile af-context-tile-new" data-action="tab" data-tab="add">' +
+        '<span class="af-context-label">＋ 새 상황</span>' +
+      '</button>'
+    );
+    return (
+      '<div class="af-scroll">' +
+        '<div class="af-contexts-title">내 상황</div>' +
+        '<div class="af-context-grid">' + tiles + '</div>' +
+      '</div>'
+    );
+  }
+
+  function searchScreenHTML() {
+    var q = state.query.trim().toLowerCase();
+    var results = state.sentences.filter(function (s) {
+      return s.situation.toLowerCase().indexOf(q) > -1 || s.en.toLowerCase().indexOf(q) > -1 || s.ko.toLowerCase().indexOf(q) > -1;
+    });
+    var body = results.length === 0
+      ? emptyHTML("일치하는 문장이 없어요. 다른 단어로 검색해보세요.")
+      : '<div class="af-group-body">' + results.map(function (s) {
+          return '<div><div class="af-search-tag">' + esc(s.situation) + '</div>' + cardHTML(s) + '</div>';
+        }).join("") + '</div>';
+    return '<div class="af-scroll"><div class="af-result-count">' + results.length.toLocaleString() + '개 문장</div>' + body + '</div>';
+  }
+
+  function translateErrHTML(err) {
+    if (err === "NO_API_KEY") {
+      return '<p class="af-error-text">자동 번역을 쓰려면 <button class="af-inline-link" data-action="open-settings">설정에서 API 키를 등록</button>하세요.</p>';
+    } else if (err) {
+      return '<p class="af-error-text">' + esc(err) + '</p>';
+    }
+    return "";
+  }
+
+  function addScreenHTML() {
+    var existing = [];
+    state.sentences.forEach(function (s) { if (existing.indexOf(s.situation) === -1) existing.push(s.situation); });
+    if (!state.add.situation && existing.length && !state.add.useCustom) state.add.situation = existing[0];
+    var useCustom = state.add.useCustom || existing.length === 0;
+
+    var situationField = useCustom
+      ? '<div class="af-situation-row">' +
+          '<input class="af-situation-input" id="af-situation-custom" placeholder="예: 호텔 조식 카페에서" value="' + esc(state.add.situation) + '" />' +
+          (existing.length ? '<button class="af-situation-new" data-action="situation-mode" data-mode="select">목록에서 선택</button>' : '') +
+        '</div>'
+      : '<div class="af-situation-row">' +
+          '<select class="af-situation-select" id="af-situation-select">' +
+            existing.map(function (sit) { return '<option value="' + esc(sit) + '"' + (sit === state.add.situation ? " selected" : "") + '>' + esc(sit) + '</option>'; }).join("") +
+          '</select>' +
+          '<button class="af-situation-new" data-action="situation-mode" data-mode="custom">+ 새 상황</button>' +
+        '</div>';
+
+    var errHTML = translateErrHTML(state.add.translateErr);
+    var canSave = state.add.en.trim() && state.add.ko.trim() && state.add.situation.trim();
+
+    return (
+      '<div class="af-add">' +
+        '<label class="af-field-label">영어 문장</label>' +
+        '<textarea class="af-add-en" id="af-add-en" rows="2" placeholder="I wanna go for a green salad.">' + esc(state.add.en) + '</textarea>' +
+        '<label class="af-field-label">한국어 번역<span id="af-translate-indicator">' +
+          (state.add.translating ? '<span class="af-inline-loading"><span class="af-spinner"></span> 번역 중…</span>' : '') +
+        '</span></label>' +
+        '<textarea class="af-add-ko" id="af-add-ko" rows="2" placeholder="영어를 입력하면 자동으로 번역돼요. 직접 수정도 가능해요.">' + esc(state.add.ko) + '</textarea>' +
+        '<div id="af-translate-error">' + errHTML + '</div>' +
+        '<label class="af-field-label">상황</label>' +
+        situationField +
+        '<button class="af-save-btn" id="af-save-btn" ' + (canSave ? "" : "disabled") + '>문장 저장하기</button>' +
+      '</div>'
+    );
+  }
+
+  function shiftMonth(c, delta) {
+    var ny = c.y, nm = c.m + delta;
+    if (nm < 0) { nm = 11; ny -= 1; } else if (nm > 11) { nm = 0; ny += 1; }
+    return { y: ny, m: nm };
+  }
+
+  function calendarScreenHTML() {
+    var countByDate = {};
+    state.sentences.forEach(function (s) { countByDate[s.date] = (countByDate[s.date] || 0) + 1; });
+    var y = state.calCursor.y, m = state.calCursor.m;
+    var today = kstNow();
+    var todayIso = todayStr(0);
+    var koDow = ["일", "월", "화", "수", "목", "금", "토"];
+    var monDow = ["월", "화", "수", "목", "금", "토", "일"]; // Monday-first labels
+
+    var startWeekdayMon = (new Date(y, m, 1).getDay() + 6) % 7;
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var cells = [];
+    for (var i = 0; i < startWeekdayMon; i++) cells.push(null);
+    for (var d = 1; d <= daysInMonth; d++) cells.push(d);
+
+    var streak = 0;
+    var cur = kstNow();
+    while (true) {
+      var iso = kstIso(cur);
+      if ((countByDate[iso] || 0) >= DAILY_GOAL) { streak++; cur.setUTCDate(cur.getUTCDate() - 1); } else break;
+    }
+
+    var todayMonIdx = (today.getUTCDay() + 6) % 7;
+    var dowHTML = monDow.map(function (d2, idx) {
+      return '<div class="af-cal-dow-cell' + (idx === todayMonIdx ? " is-today-dow" : "") + '">' + d2 + '</div>';
+    }).join("");
+
+    var cellsHTML = cells.map(function (d3) {
+      if (d3 === null) return '<div class="af-cal-dot-cell af-cal-dot-cell-empty"></div>';
+      var iso3 = y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d3).padStart(2, "0");
+      var count = countByDate[iso3] || 0;
+      var cls = "af-cal-dot";
+      if (iso3 === todayIso) cls += " is-today";
+      else if (iso3 < todayIso) cls += " is-past";
+      else cls += " is-future";
+      var label = count > 0 ? count : "";
+      return '<div class="af-cal-dot-cell"><span class="' + cls + '">' + label + '</span></div>';
+    }).join("");
+
+    return (
+      '<div class="af-scroll">' +
+        '<div class="af-cal-hero">' +
+          '<div class="af-cal-hero-num">' + today.getUTCDate() + '</div>' +
+          '<div class="af-cal-hero-row">' +
+            '<div class="af-cal-hero-month">' + today.getUTCFullYear() + '년 ' + (today.getUTCMonth() + 1) + '월</div>' +
+            '<div class="af-cal-hero-dow">' + koDow[today.getUTCDay()] + '요일</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="af-cal-nav-row">' +
+          '<button class="af-cal-nav" data-action="cal-nav" data-delta="-1">‹</button>' +
+          '<span class="af-cal-title">' + y + '년 ' + (m + 1) + '월</span>' +
+          '<button class="af-cal-nav" data-action="cal-nav" data-delta="1">›</button>' +
+        '</div>' +
+        '<div class="af-cal-grid af-cal-dow">' + dowHTML + '</div>' +
+        '<div class="af-cal-grid">' + cellsHTML + '</div>' +
+        (streak > 0 ? '<div class="af-streak">🔥<span>' + streak + '일 연속 ' + DAILY_GOAL + '문장 달성 중</span></div>' : '') +
+        '<div class="af-cal-legend">' +
+          '<span class="af-cal-legend-item"><span class="af-cal-dot is-past" style="position:static; width:16px; height:16px; font-size:0;"></span>지난 날</span>' +
+          '<span class="af-cal-legend-item"><span class="af-cal-dot is-today" style="position:static; width:16px; height:16px; font-size:0;"></span>오늘</span>' +
+          '<span class="af-cal-legend-item"><span class="af-cal-dot is-future" style="position:static; width:16px; height:16px; font-size:0;"></span>예정</span>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function screenHTML() {
+    if (state.query.trim()) return searchScreenHTML();
+    if (state.tab === "home") return homeScreenHTML();
+    if (state.tab === "calendar") return calendarScreenHTML();
+    return addScreenHTML();
+  }
+
+  function settingsModalHTML() {
+    if (!state.settingsOpen) return "";
+    var key = "";
+    try { key = localStorage.getItem(API_KEY_STORAGE) || ""; } catch (e) {}
+    return (
+      '<div class="af-modal-backdrop" data-action="close-settings">' +
+        '<div class="af-modal" id="af-modal-inner">' +
+          '<h3 class="af-modal-title">번역 설정</h3>' +
+          '<p class="af-modal-desc">영어 문장을 자동으로 번역하려면 Anthropic API 키가 필요해요. console.anthropic.com 에서 발급받을 수 있어요. 이 키는 이 브라우저 안에만 저장돼요.</p>' +
+          '<input class="af-modal-input" id="af-api-key-input" type="password" placeholder="sk-ant-..." value="' + esc(key) + '" />' +
+          '<div class="af-modal-actions">' +
+            '<button class="af-save-btn" data-action="save-settings">저장</button>' +
+            '<button class="af-modal-cancel" data-action="close-settings">취소</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function moveModalHTML() {
+    if (!state.moveForId) return "";
+    var sentence = state.sentences.find(function (s) { return s.id === state.moveForId; });
+    if (!sentence) return "";
+    var existing = [];
+    state.sentences.forEach(function (s) { if (existing.indexOf(s.situation) === -1) existing.push(s.situation); });
+
+    var body;
+    if (state.moveCustomMode) {
+      body =
+        '<input class="af-modal-input" id="af-move-custom-input" placeholder="새 상황 이름" />' +
+        '<div class="af-modal-actions">' +
+          '<button class="af-save-btn" data-action="move-confirm-custom" data-id="' + sentence.id + '">이동</button>' +
+          '<button class="af-modal-cancel" data-action="move-toggle-custom">목록으로</button>' +
+        '</div>';
+    } else {
+      var options = existing.map(function (sit) {
+        return '<button class="af-move-option' + (sit === sentence.situation ? " is-current" : "") + '" data-action="move-to" data-id="' + sentence.id + '" data-situation="' + esc(sit) + '">' +
+          esc(sit) + (sit === sentence.situation ? ' <span class="af-move-current-tag">현재</span>' : '') +
+        '</button>';
+      }).join("");
+      body =
+        '<div class="af-move-list">' + options + '</div>' +
+        '<div class="af-modal-actions">' +
+          '<button class="af-modal-cancel" data-action="move-toggle-custom">+ 새 상황으로</button>' +
+          '<button class="af-modal-cancel" data-action="close-move">취소</button>' +
+        '</div>';
+    }
+
+    return (
+      '<div class="af-modal-backdrop" data-action="close-move">' +
+        '<div class="af-modal" id="af-move-modal-inner">' +
+          '<h3 class="af-modal-title">문장 이동</h3>' +
+          '<p class="af-modal-desc">"' + esc(sentence.en) + '"</p>' +
+          body +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderAll() {
+    var total = state.sentences.length;
+    var todayIsoNow = todayStr(0);
+    var todayCount = state.sentences.filter(function (s) { return s.date === todayIsoNow; }).length;
+    var searching = !!state.query.trim();
+    root.innerHTML =
+      '<div class="af-root"><div class="af-app">' +
+        '<div class="af-header">' +
+          '<div class="af-brand-row">' +
+            '<div class="af-brand"><span class="af-brand-name">shattoshatto</span></div>' +
+            '<div class="af-header-right">' +
+              '<div class="af-stat af-stat-today"><span class="af-stat-num af-stat-num-today" id="af-stat-today">' + todayCount.toLocaleString() + '</span></div>' +
+              '<div class="af-stat"><span class="af-stat-num" id="af-stat-num">' + total.toLocaleString() + '</span></div>' +
+              '<button class="af-settings-btn" data-action="open-settings">⚙</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="af-searchbar">' +
+            '<span class="af-searchbar-icon">🔍</span>' +
+            '<input class="af-searchbar-input" id="af-search-input" placeholder="상황이나 단어로 검색" value="' + esc(state.query) + '" />' +
+            (state.query ? '<button class="af-searchbar-clear" data-action="clear-search">✕</button>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="af-screen" id="af-screen">' + screenHTML() + '</div>' +
+        '<nav class="af-tabbar">' +
+          '<button class="af-tabbtn' + (state.tab === "home" && !searching ? " is-active" : "") + '" data-action="tab" data-tab="home"><span>🏠</span><span>홈</span></button>' +
+          '<button class="af-tab-add" data-action="tab" data-tab="add">＋</button>' +
+          '<button class="af-tabbtn' + (state.tab === "calendar" && !searching ? " is-active" : "") + '" data-action="tab" data-tab="calendar"><span>📅</span><span>캘린더</span></button>' +
+        '</nav>' +
+      '</div></div>' +
+      settingsModalHTML() +
+      moveModalHTML();
+    bindScreenInputs();
+  }
+
+  function renderScreenOnly() {
+    document.getElementById("af-screen").innerHTML = screenHTML();
+    bindScreenInputs();
+  }
+
+  // Re-attach lightweight input listeners that must NOT trigger a full re-render
+  // (so the on-screen keyboard / focus / cursor position is preserved while typing).
+  function bindScreenInputs() {
+    var addEn = document.getElementById("af-add-en");
+    if (addEn && !addEn.dataset.bound) {
+      addEn.dataset.bound = "1";
+      addEn.addEventListener("input", function () {
+        state.add.en = addEn.value;
+        setSaveDisabledLive();
+        clearTimeout(addTranslateTimer);
+        var indicator = document.getElementById("af-translate-indicator");
+        var errBox = document.getElementById("af-translate-error");
+        if (!addEn.value.trim()) {
+          if (indicator) indicator.innerHTML = "";
+          if (errBox) errBox.innerHTML = "";
+          return;
+        }
+        addTranslateTimer = setTimeout(function () {
+          state.add.translating = true;
+          state.add.translateErr = null;
+          if (indicator) indicator.innerHTML = '<span class="af-inline-loading"><span class="af-spinner"></span> 번역 중…</span>';
+          if (errBox) errBox.innerHTML = "";
+          translateToKorean(addEn.value.trim(), function (err, result) {
+            state.add.translating = false;
+            var indicator2 = document.getElementById("af-translate-indicator");
+            var errBox2 = document.getElementById("af-translate-error");
+            if (indicator2) indicator2.innerHTML = "";
+            if (err) {
+              state.add.translateErr = err.code === "NO_API_KEY" ? "NO_API_KEY" : "번역에 실패했어요. 직접 입력해주세요.";
+              if (errBox2) errBox2.innerHTML = translateErrHTML(state.add.translateErr);
+            } else {
+              state.add.ko = result;
+              var koEl = document.getElementById("af-add-ko");
+              if (koEl) koEl.value = result;
+              if (errBox2) errBox2.innerHTML = "";
+            }
+            setSaveDisabledLive();
+          });
+        }, 700);
+      });
+    }
+    var addKo = document.getElementById("af-add-ko");
+    if (addKo && !addKo.dataset.bound) {
+      addKo.dataset.bound = "1";
+      addKo.addEventListener("input", function () { state.add.ko = addKo.value; setSaveDisabledLive(); });
+    }
+    var situationCustom = document.getElementById("af-situation-custom");
+    if (situationCustom && !situationCustom.dataset.bound) {
+      situationCustom.dataset.bound = "1";
+      situationCustom.addEventListener("input", function () { state.add.situation = situationCustom.value; setSaveDisabledLive(); });
+    }
+    var situationSelect = document.getElementById("af-situation-select");
+    if (situationSelect && !situationSelect.dataset.bound) {
+      situationSelect.dataset.bound = "1";
+      situationSelect.addEventListener("change", function () { state.add.situation = situationSelect.value; setSaveDisabledLive(); });
+    }
+    var searchInput = document.getElementById("af-search-input");
+    if (searchInput && !searchInput.dataset.bound) {
+      searchInput.dataset.bound = "1";
+      searchInput.addEventListener("input", function () {
+        state.query = searchInput.value;
+        renderScreenOnly();
+        var bar = searchInput.parentElement;
+        var existingClear = bar.querySelector('[data-action="clear-search"]');
+        if (state.query && !existingClear) {
+          var btn = document.createElement("button");
+          btn.className = "af-searchbar-clear";
+          btn.setAttribute("data-action", "clear-search");
+          btn.textContent = "✕";
+          bar.appendChild(btn);
+        } else if (!state.query && existingClear) {
+          existingClear.remove();
+        }
+      });
+    }
+    document.querySelectorAll('[data-edit-field]').forEach(function (el) {
+      if (el.dataset.bound) return;
+      el.dataset.bound = "1";
+      el.addEventListener("input", function () {
+        state.editBuffer[el.getAttribute("data-edit-field")] = el.value;
+      });
+    });
+  }
+
+  function setSaveDisabledLive() {
+    var btn = document.getElementById("af-save-btn");
+    if (!btn) return;
+    var can = state.add.en.trim() && state.add.ko.trim() && state.add.situation.trim();
+    btn.disabled = !can;
+  }
+
+  // ---------------- events (delegated, survive re-renders) ----------------
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-action]");
+    if (!el) return;
+    var action = el.getAttribute("data-action");
+
+    if (action === "tab") {
+      state.tab = el.getAttribute("data-tab");
+      state.selectedSituation = null;
+      state.query = "";
+      if (state.tab === "add") state.add = { en: "", ko: "", situation: "", useCustom: false, translating: false, translateErr: null };
+      renderAll();
+    } else if (action === "open-situation") {
+      state.selectedSituation = el.getAttribute("data-situation");
+      renderAll();
+    } else if (action === "back-home") {
+      state.selectedSituation = null;
+      renderAll();
+    } else if (action === "clear-search") {
+      state.query = "";
+      renderAll();
+    } else if (action === "open-settings") {
+      state.settingsOpen = true;
+      renderAll();
+    } else if (action === "close-settings") {
+      if (el.classList.contains("af-modal-backdrop") && e.target.closest(".af-modal")) return;
+      state.settingsOpen = false;
+      renderAll();
+    } else if (action === "save-settings") {
+      var val = document.getElementById("af-api-key-input").value.trim();
+      try {
+        if (val) localStorage.setItem(API_KEY_STORAGE, val);
+        else localStorage.removeItem(API_KEY_STORAGE);
+      } catch (e2) {}
+      state.settingsOpen = false;
+      renderAll();
+    } else if (action === "situation-mode") {
+      state.add.useCustom = el.getAttribute("data-mode") === "custom";
+      renderScreenOnly();
+    } else if (action === "menu-edit") {
+      var id1 = el.getAttribute("data-id");
+      var s1 = state.sentences.find(function (s) { return s.id === id1; });
+      state.editingId = id1;
+      state.editBuffer = { en: s1.en, ko: s1.ko };
+      state.menuOpenId = null;
+      renderAll();
+    } else if (action === "menu-delete") {
+      deleteSentenceRecord(el.getAttribute("data-id"));
+      state.menuOpenId = null;
+      renderAll();
+    } else if (action === "menu-move") {
+      state.moveForId = el.getAttribute("data-id");
+      state.moveCustomMode = false;
+      state.menuOpenId = null;
+      renderAll();
+    } else if (action === "move-to") {
+      updateSentenceRecord(el.getAttribute("data-id"), { situation: el.getAttribute("data-situation") });
+      state.moveForId = null;
+      renderAll();
+    } else if (action === "move-toggle-custom") {
+      state.moveCustomMode = !state.moveCustomMode;
+      renderAll();
+    } else if (action === "move-confirm-custom") {
+      var moveInput = document.getElementById("af-move-custom-input");
+      var val = moveInput ? moveInput.value.trim() : "";
+      if (val) {
+        updateSentenceRecord(el.getAttribute("data-id"), { situation: val });
+        state.moveForId = null;
+      }
+      renderAll();
+    } else if (action === "close-move") {
+      if (el.classList.contains("af-modal-backdrop") && e.target.closest(".af-modal")) return;
+      state.moveForId = null;
+      renderAll();
+    } else if (action === "close-menu") {
+      state.menuOpenId = null;
+      renderAll();
+    } else if (action === "save-edit") {
+      var id2 = el.getAttribute("data-id");
+      updateSentenceRecord(id2, { en: state.editBuffer.en.trim(), ko: state.editBuffer.ko.trim() });
+      state.editingId = null;
+      renderAll();
+    } else if (action === "cancel-edit") {
+      state.editingId = null;
+      renderAll();
+    } else if (action === "cal-nav") {
+      state.calCursor = shiftMonth(state.calCursor, parseInt(el.getAttribute("data-delta"), 10));
+      renderScreenOnly();
+    } else if (el.id === "af-save-btn") {
+      // handled below (id-based, not data-action, kept simple)
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    if (e.target && e.target.id === "af-save-btn") {
+      if (e.target.disabled) return;
+      addSentenceRecord({ en: state.add.en.trim(), ko: state.add.ko.trim(), situation: state.add.situation.trim() });
+      state.tab = "home";
+      state.selectedSituation = null;
+      state.add = { en: "", ko: "", situation: "", useCustom: false, translating: false, translateErr: null };
+      renderAll();
+    }
+  });
+
+  // long-press to open the edit/delete menu on a sentence card
+  document.addEventListener("pointerdown", function (e) {
+    var target = e.target.closest(".af-press-target");
+    if (!target || state.editingId) return;
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(function () {
+      state.menuOpenId = target.getAttribute("data-id");
+      renderAll();
+    }, 450);
+  });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(function (evt) {
+    document.addEventListener(evt, function () { clearTimeout(pressTimer); });
+  });
+  document.addEventListener("contextmenu", function (e) {
+    if (e.target.closest(".af-press-target")) e.preventDefault();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
